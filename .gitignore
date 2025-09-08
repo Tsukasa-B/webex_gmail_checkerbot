@@ -1,0 +1,8 @@
+# 認証情報ファイル
+credentials.json
+token.json
+
+# Pythonのキャッシュファイルなど
+__pycache__/
+*.pyc
+.venv/
