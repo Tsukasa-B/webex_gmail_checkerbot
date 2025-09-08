@@ -2,19 +2,18 @@ name: Check Gmail and Notify Webex
 
 # ワークフローが実行されるタイミングを定義
 on:
-  # masterブランチにプッシュされた時に実行(テスト用)
+  # mainブランチにプッシュされた時に実行(テスト用)
   push:
-    branches: [main]
-  # スケジュール実行： JSTの午前10から午後５時までの間，１時間毎に実行
-  # (UTCなので９時間引いて設定)
+    branches: [ main ]
+  # スケジュール実行： JSTの午前10時から午後5時までの間、1時間毎に実行
   schedule:
-    - cron '0 1-8 * * *'
+    - cron: '0 1-8 * * *' # 修正点1: cronの前にハイフンとスペースが必要です
 
-  jobs:
-    run-script:
-    runs-on: ubuntu-latest  # 実行環境
+jobs: # 修正点2: "jobs" は "on" と同じ階層（インデントなし）に置きます
+  run-script:
+    runs-on: ubuntu-latest # "runs-on" はジョブ名 "run-script" の下にインデントします
 
-    steps:
+    steps: # "steps" も "runs-on" と同じ階層に置きます
       # 1. リポジトリのコードをチェックアウト
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,16 +21,17 @@ on:
       # 2. Python環境をセットアップ
       - name: Set up Python
         uses: actions/setup-python@v4
+        with: # 改善点1: Pythonのバージョンを固定します
+          python-version: '3.10'
 
       # 3. 必要なライブラリをインストール
       - name: Install dependencies
         run: |
-          python -m pip install -upgrade pip
+          python -m pip install --upgrade pip # 修正点3: "-upgrade" -> "--upgrade"
           pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib webexteamssdk
-      
+
       # 4. Pythonスクリプトを実行
       - name: Run Gmail Checker
-        # ここでGitHub Secretsを環境変数としてスクリプトに渡す
         env:
           GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
           GMAIL_PROJECT_ID: ${{ secrets.GMAIL_PROJECT_ID }}
@@ -40,4 +40,4 @@ on:
           GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
           WEBEX_BOT_TOKEN: ${{ secrets.WEBEX_BOT_TOKEN }}
           WEBEX_ROOM_ID: ${{ secrets.WEBEX_ROOM_ID }}
-        run: python gmail_checker.py       
+        run: python gmail_checker.py
